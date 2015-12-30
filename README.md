@@ -1,7 +1,12 @@
 # google-earth-deb-64
 patch of amd64 Google Earth, for Debian 8 Jessie (and similar), uses system Qt libraries
 
-- *run /opt/google/earth/free/baifaao_compile to compile baifaao.cpp (and move Qt libs outside)*,
+- install the package
+``
+dpkg -i google-earth-7.1.4.1529-amd64-patch.deb
+``
+
+- *run: cd /opt/google/earth/free/; ./baifaao_compile* to compile baifaao.cpp (and move Qt libs outside),
   baifaao.so solves the error with system Qt libraries (.so in package is from Debian 8 Jessie stable 64b)
 
 - with Qt libraries deleted, the system Qt libraries are used
@@ -18,8 +23,7 @@ based on / see / thanks to
 - http://www.funtoo.org/Googleearth_panaramio_fix
 
 
-see both resources and /opt/google/earth/free/
-
+see both resources and /opt/google/earth/free/googleearth
 
 to build the package again:
 ``

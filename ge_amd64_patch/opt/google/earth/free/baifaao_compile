@@ -1,0 +1,30 @@
+#!/bin/sh
+# Google Earth amd64 patch (delete bundled Qt libraries, thx http://www.funtoo.org/Googleearth_panaramio_fix)
+# create baifaao.cpp (see bellow), then run this from /opt/google/earth/free as root
+
+# Modified by:
+# zvolsky@seznam.cz Dec 30 04:00:00 IDT 2015
+#	/* after delete/move of bundled Qt libraries to avoid error "./libbase.so: undefined symbol" */
+#	/* create /opt/google/earth/free/baifaao.cpp */
+#	include <QtCore/QAtomicInt>
+#	extern "C" {
+#		int _Z34QBasicAtomicInt_fetchAndAddOrderedPVii(QAtomicInt* a, int b) {
+#			return a->fetchAndAddOrdered(b);
+#		}
+#	}
+#	/* then compile it: gcc -I/usr/include/qt4 -O3 -fPIC --shared baifaao.cpp -o baifaao.so */
+
+gcc -I/usr/include/qt4 -O3 -fPIC --shared baifaao.cpp -o baifaao.so
+
+
+#	/* this script will move bundled Qt libraries outside to use system ones, too */
+ 
+#[[ -d unused-bundled-qtlib ]] || (mkdir unused-bundled-qtlib/ && mv libQt* unused-bundled-qtlib/)
+#[[ -d unused-bundled-qtlib ]] || mkdir unused-bundled-qtlib/
+
+if [ ! -d unused-bundled-qtlib ]; then
+  mkdir unused-bundled-qtlib
+fi
+if [ -f libQtCore.so.4 ]; then
+  mv libQt* unused-bundled-qtlib/
+fi

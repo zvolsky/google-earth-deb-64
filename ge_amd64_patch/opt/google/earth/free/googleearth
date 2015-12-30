@@ -1,0 +1,53 @@
+#!/bin/sh
+# Always run Google Earth from this shell script and not
+# Google Earth directly! This script makes sure the app looks
+# in the right place for libraries that might also be installed
+# elsewhere on your system.
+#
+# Originally by:
+# Ryan C. Gordon,  Thu Jul 20 14:32:33 PDT 2006
+# Modified by:
+# amirpli@gmail.com Thu May 30 02:04:01 IDT 2013
+# - use readlink
+# - load libfreeimage.so.3
+# - make it is easy to attach debug commands, e.g:
+#	ge_debug='ldd -v' google-earth
+# - avoid appending an empty component to LD_LIBRARY_PATH
+# - set google-chrome as external browser (if desired)
+# Modified by:
+# zvolsky@seznam.cz Dec 30 04:00:00 IDT 2015
+# - this modification just add the call of baifaao patch
+#   known issues: (Debian Jessie stable) next pictures in set fail - but you can right-click/Open-link to browse them
+#
+#   thx/see amirpli: https://productforums.google.com/forum/#!topic/maps/_h4t6SpY_II
+#   thx/see: http://www.funtoo.org/Googleearth_panaramio_fix
+#   both bellow (delete Qt libraries + compile baifaao) you can do manually (as described here bellow)
+#    or with baifaao_compile if you have the whole patched package google-earth-7.1.4.1529-amd64-patch.deb
+#    (baifaao.so in package comes from Debian Jessie stable)
+#
+#	to avoid error "./libbase.so: undefined symbol" which will occur without bundled Qt libraries:
+#	create /opt/google/earth/free/baifaao.cpp
+#	 then compile it: gcc -I/usr/include/qt4 -O3 -fPIC --shared baifaao.cpp -o baifaao.so
+#		include <QtCore/QAtomicInt>
+#		extern "C" {
+#			int _Z34QBasicAtomicInt_fetchAndAddOrderedPVii(QAtomicInt* a, int b) {
+#				return a->fetchAndAddOrdered(b);
+#			}
+#		}
+
+
+# Find the installation directory. Try first the Linux/BSD way.
+googleearth_dir=$(readlink -f $0/.. 2>/dev/null || {			
+	filename=$(readlink $0 || echo $0)
+	dirname $filename
+})
+cd $googleearth_dir
+
+#style="-style Cleanlooks"	# change the style
+#export LC_NUMERIC=en_US.UTF-8	# uncomment if still needed with the new libraries
+#export BROWSER=google-chrome	# uncomment if desired
+#export LD_PRELOAD=libfreeimage.so.3
+export LD_PRELOAD=libfreeimage.so.3:$googleearth_dir/baifaao.so
+#export QT_GRAPHICSSYSTEM=native
+export LD_LIBRARY_PATH=.${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+exec $ge_debug ./googleearth-bin $style "$@"
